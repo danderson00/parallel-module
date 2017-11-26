@@ -29,11 +29,13 @@ module.exports = function (options) {
           return worker.api[property].apply(worker, args)
             .then(result => {
               availableWorkers.push(worker)
+              executeQueuedRequest()
               return result
             })
             // need .finally...
             .catch(error => {
               availableWorkers.push(worker)
+              executeQueuedRequest()
               throw error
             })
         }
@@ -57,14 +59,16 @@ module.exports = function (options) {
   })
 
   function createWorker() {
-    var worker = options.workerFactory
-      ? options.workerFactory()
-      : new (options.workerConstructor)(path)
+    var container = {
+      worker: options.workerFactory
+        ? options.workerFactory()
+        : new (options.workerConstructor)(options.workerPath)
+    }
+    workers.push(container)
 
-    return client(worker, options.parameter)
+    return client(container.worker, options.parameter)
       .then(api => {
-        var container = { api: api, worker: worker }
-        workers.push(container)
+        container.api = api
         availableWorkers.push(container)
         return api
       })
