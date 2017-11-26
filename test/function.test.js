@@ -37,9 +37,7 @@ test("promise rejections are flowed", () =>
 test("emit from function can be subscribed to", () => {
   var emits = []
   return client(createWorker('emit'))
-    .then(getResult => {
-      return getResult().subscribe(data => emits.push(data))
-    })
+    .then(getResult => getResult().subscribe(data => emits.push(data)))
     .then(result => {
       expect(emits).toEqual(['stage 1', { stage: 2 }])
       expect(result).toBe('complete')
