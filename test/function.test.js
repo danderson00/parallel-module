@@ -8,13 +8,13 @@ beforeAll(setup)
 afterEach(() => worker.terminate())
 var createWorker = name => worker = new Worker(path.join(__dirname, `build/${name}.js`))
 
-test("synchronous process returns result", () =>
+test("synchronous function returns result", () =>
   client(createWorker('sync'))
     .then(getResult => getResult(2))
     .then(result => expect(result).toBe(4))
 )
 
-test("asynchronous process returns result", () =>
+test("asynchronous function returns result", () =>
   client(createWorker('async'))
     .then(getResult => getResult(2))
     .then(result => expect(result).toBe(6))
@@ -34,7 +34,7 @@ test("promise rejections are flowed", () =>
     .catch(error => expect(error).toEqual({ code: 'test' }))
 )
 
-test("emit from process can be subscribed to", () => {
+test("emit from function can be subscribed to", () => {
   var emits = []
   return client(createWorker('emit'))
     .then(getResult => {
