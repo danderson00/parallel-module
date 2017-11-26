@@ -5,7 +5,7 @@ var path = require('path')
 var api
 
 beforeAll(setup)
-beforeEach(() => client(new Worker(path.join(__dirname, 'build/api.js')), 2).then(clientApi => api = clientApi))
+beforeEach(() => client(new Worker(path.join(__dirname, 'build/api.js')), { parameter: 2 }).then(clientApi => api = clientApi))
 afterEach(() => api.terminate())
 
 test("synchronous api call returns result", () => 

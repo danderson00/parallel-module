@@ -1,4 +1,4 @@
-module.exports = function(worker, param) {
+module.exports = function(worker, options) {
   var nextId = (function(id) {
     return function() { 
       return ++id
@@ -14,24 +14,29 @@ module.exports = function(worker, param) {
   var initId = nextId()
 
   return attachSubscribeFunction(initId,
-    execute(initId, { type: 'init', param: param })
+    execute(initId, { type: 'init', options: options })
       .then(function(result) {
-        switch(result && result.type) {
-          case 'process':
-            return result.result
-          case 'api':
-            return Object.assign(result.operations.reduce(function(api, operation) {
-              api[operation] = function(param) {
-                return execute(nextId(), { type: 'invoke', param: param, operation: operation })
-              }
-              return api
-            }, {}), { 
-              terminate: function() {
-                worker.terminate() 
-              }
-            }) 
-          default:
-            throw new Error('Unrecognized response from worker')
+        if(result.type === 'api') {
+          return Object.assign(result.operations.reduce(function(api, operation) {
+            api[operation] = function(param) {
+              return execute(nextId(), { type: 'invoke', param: param, operation: operation })
+            }
+            return api
+          }, {}), { 
+            terminate: function() {
+              worker.terminate() 
+            }
+          }) 
+        } else if (result.type === 'function') {
+          var executeFunction = function(param) {
+            return execute(nextId(), { type: 'invoke', param: param })            
+          }
+          executeFunction.terminate = function() {
+            worker.terminate()
+          }
+          return executeFunction
+        } else {
+          throw new Error("Unrecognised response from server")
         }
       })
   )

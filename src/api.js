@@ -3,10 +3,10 @@
 var commonFactory = require('./worker.common')
 var stub = require('./stub')
 
-module.exports = function(worker, host) {
+module.exports = function(workerModule, host) {
   host = host || self
 
-  var operations
+  var resolvedModule
 
   host.onmessage = function(e) {
     var common = commonFactory(host || self)
@@ -17,10 +17,23 @@ module.exports = function(worker, host) {
     try {
       switch(e.data.type) {
         case 'init':
-          Promise.resolve(worker(e.data.param, userEmit))
+        var options = e.data.options || {}
+          var initPromise
+          if(options.parameter || options.includeEmit) {
+            initPromise = Promise.resolve(workerModule(options.parameter, userEmit))
+          } else {
+            initPromise = Promise.resolve(workerModule)
+          }
+
+          initPromise
             .then(function(result) {
-              operations = result
-              emit({ result: { type: 'api', operations: Object.keys(result) } })
+              resolvedModule = result
+              if(typeof result === 'object')
+                emit({ result: { type: 'api', operations: Object.keys(result) } })
+              else if (typeof result === 'function')
+                emit({ result: { type: 'function' } })
+              else
+                emitError(new Error('Module exports must either be a function or an object'))
             })
             .catch(function(error) {
               emitError(error)
@@ -29,12 +42,20 @@ module.exports = function(worker, host) {
           break;
 
         case 'invoke':
-          if(!operations[e.data.operation])
-            emitError(new Error('Unknown operation: ' + e.data.operation))
-          
-            Promise.resolve(operations[e.data.operation](e.data.param, userEmit))
+          if(typeof resolvedModule === 'object') {
+            if(!resolvedModule[e.data.operation])
+              emitError(new Error('Unknown operation: ' + e.data.operation))
+            
+            Promise.resolve(resolvedModule[e.data.operation](e.data.param, userEmit))
               .then(function(result) { emit({ result: result }) })
               .catch(emitError)
+          } else if (typeof resolvedModule === 'function') {
+            Promise.resolve(resolvedModule(e.data.param, userEmit))
+              .then(function(result) { emit({ result: result }) })
+              .catch(emitError)
+          } else {
+            emitError(new Error('Module exports must either be a function or an object'))
+          }
           break;
 
         default:

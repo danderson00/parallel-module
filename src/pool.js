@@ -66,7 +66,7 @@ module.exports = function (options) {
     }
     workers.push(container)
 
-    return client(container.worker, options.parameter)
+    return client(container.worker, { parameter: options.parameter, includeEmit: options.includeEmit })
       .then(api => {
         container.api = api
         availableWorkers.push(container)
