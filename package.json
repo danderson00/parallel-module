@@ -1,0 +1,22 @@
+{
+  "name": "parallel-module",
+  "version": "0.0.18",
+  "description": "Offload Javascript workloads to multiple CPU cores the easy way",
+  "main": "src/pool.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "jest": {
+    "testRegex": "(/test/.*test.js)"
+  },
+  "keywords": ["parallel", "module", "worker", "webworker", "promise"],
+  "author": "danderson00@gmail.com",
+  "repository": "https://github.com/danderson00/webpack-worker",
+  "license": "MIT",
+  "devDependencies": {
+    "blob-util": "^1.2.1",
+    "jest": "^20.0.4",
+    "tiny-worker": "^2.1.1",
+    "webpack": "^2.6.1"
+  }
+}
