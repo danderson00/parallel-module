@@ -17,15 +17,9 @@ module.exports = function(workerModule, host) {
     try {
       switch(e.data.type) {
         case 'init':
-        var options = e.data.options || {}
-          var initPromise
-          if(options.parameter || options.includeEmit) {
-            initPromise = Promise.resolve(workerModule(options.parameter, userEmit))
-          } else {
-            initPromise = Promise.resolve(workerModule)
-          }
+          var options = e.data.options || {}
 
-          initPromise
+          Promise.resolve(initialiseWorkerModule(resolveWorkerModule()))
             .then(function(result) {
               resolvedModule = result
               if(typeof result === 'object')
@@ -39,25 +33,49 @@ module.exports = function(workerModule, host) {
               emitError(error)
               host.close()
             })
+
+            function resolveWorkerModule() {
+              if(workerModule)
+                return workerModule
+
+              if(options.workerPath)
+                return require(options.workerPath)
+
+              throw new Error('No worker module provided')
+            }
+
+            function initialiseWorkerModule(resolvedModule) {
+              var moduleParameters = []
+              if(options.parameter !== undefined)
+                moduleParameters.push(options.parameter)
+              if(options.includeEmit)
+                moduleParameters.push(userEmit)
+
+              return moduleParameters.length === 0
+                ? resolvedModule
+                : resolvedModule.apply(resolvedModule, moduleParameters)
+            }
           break;
 
         case 'invoke':
           var parameters = (e.data.parameters || []).concat(userEmit)
+          var invokePromise
 
           if(typeof resolvedModule === 'object') {
             if(!resolvedModule[e.data.operation])
               emitError(new Error('Unknown operation: ' + e.data.operation))
             
-            Promise.resolve(resolvedModule[e.data.operation].apply(resolvedModule, parameters))
-              .then(function(result) { emit({ result: result }) })
-              .catch(emitError)
+            invokePromise = Promise.resolve(resolvedModule[e.data.operation].apply(resolvedModule, parameters))
           } else if (typeof resolvedModule === 'function') {
-            Promise.resolve(resolvedModule.apply(resolvedModule, parameters))
-              .then(function(result) { emit({ result: result }) })
-              .catch(emitError)
+            invokePromise = Promise.resolve(resolvedModule.apply(resolvedModule, parameters))
           } else {
             emitError(new Error('Module exports must either be a function or an object'))
           }
+
+          invokePromise
+            .then(function(result) { emit({ result: result }) })
+            .catch(emitError)
+
           break;
 
         default:

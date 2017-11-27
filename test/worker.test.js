@@ -54,3 +54,15 @@ test("parameter is the first initialisation argument when both parameter and inc
     })
     .then(result => expect(result).toBe('hello world'))
 })
+
+test("function workers can be invoked with multiple parameters", () => {
+  return host(stub({ concat: (p1, p2) => p1 + p2 }))
+    .then(api => api.concat('hello', 'world'))
+    .then(result => expect(result).toBe('helloworld'))
+})
+
+test("function workers can be invoked with multiple parameters", () => {
+  return host(stub((p1, p2) => p1 + p2 ))
+    .then(api => api('hello', 'world'))
+    .then(result => expect(result).toBe('helloworld'))
+})
