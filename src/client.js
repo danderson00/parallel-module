@@ -18,8 +18,8 @@ module.exports = function(worker, options) {
       .then(function(result) {
         if(result.type === 'api') {
           return Object.assign(result.operations.reduce(function(api, operation) {
-            api[operation] = function(param) {
-              return execute(nextId(), { type: 'invoke', param: param, operation: operation })
+            api[operation] = function() {
+              return execute(nextId(), { type: 'invoke', parameters: Array.prototype.slice.apply(arguments), operation: operation })
             }
             return api
           }, {}), { 
@@ -28,8 +28,8 @@ module.exports = function(worker, options) {
             }
           }) 
         } else if (result.type === 'function') {
-          var executeFunction = function(param) {
-            return execute(nextId(), { type: 'invoke', param: param })            
+          var executeFunction = function() {
+            return execute(nextId(), { type: 'invoke', parameters: Array.prototype.slice.apply(arguments) })            
           }
           executeFunction.terminate = function() {
             worker.terminate()

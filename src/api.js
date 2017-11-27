@@ -42,15 +42,17 @@ module.exports = function(workerModule, host) {
           break;
 
         case 'invoke':
+          var parameters = (e.data.parameters || []).concat(userEmit)
+
           if(typeof resolvedModule === 'object') {
             if(!resolvedModule[e.data.operation])
               emitError(new Error('Unknown operation: ' + e.data.operation))
             
-            Promise.resolve(resolvedModule[e.data.operation](e.data.param, userEmit))
+            Promise.resolve(resolvedModule[e.data.operation].apply(resolvedModule, parameters))
               .then(function(result) { emit({ result: result }) })
               .catch(emitError)
           } else if (typeof resolvedModule === 'function') {
-            Promise.resolve(resolvedModule(e.data.param, userEmit))
+            Promise.resolve(resolvedModule.apply(resolvedModule, parameters))
               .then(function(result) { emit({ result: result }) })
               .catch(emitError)
           } else {

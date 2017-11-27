@@ -4,7 +4,7 @@ require('../../src/api')(baseValue => ({
   error: () => { throw new Error('test') },
   reject: () => Promise.reject({ code: 'test' }),
   buffer: buffer => buffer.constructor.name,
-  emit: (param, emit) => 
+  emit: (emit) => 
     sleep(10)
       .then(() => emit('stage 1'))
       .then(() => sleep(10))

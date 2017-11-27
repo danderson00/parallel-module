@@ -1,4 +1,4 @@
-require('../../src/api')((param, emit) => 
+require('../../src/api')((emit) => 
   sleep(10)
     .then(() => emit('stage 1'))
     .then(() => sleep(10))

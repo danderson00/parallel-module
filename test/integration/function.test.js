@@ -1,12 +1,12 @@
 var Worker = require('tiny-worker')
-var client = require('../src/client')
-var setup = require('./setup')
+var client = require('../../src/client')
+var setup = require('../setup')
 var path = require('path')
 var worker
 
 beforeAll(setup)
 afterEach(() => worker.terminate())
-var createWorker = name => worker = new Worker(path.join(__dirname, `build/${name}.js`))
+var createWorker = name => worker = new Worker(path.join(__dirname, `../build/${name}.js`))
 
 test("synchronous function returns result", () =>
   client(createWorker('sync'))
