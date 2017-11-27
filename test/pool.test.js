@@ -1,5 +1,5 @@
 var pool = require('../src/pool')
-var stub = require('../src/api').stub
+var stub = require('../src/worker').stub
 
 test("executes single calls", () => {
   return pool({ workerFactory: () => stub({ echo: value => value }) })

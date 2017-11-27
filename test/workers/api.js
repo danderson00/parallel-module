@@ -1,4 +1,4 @@
-require('../../src/api')(baseValue => ({
+require('../../src/worker')(baseValue => ({
   multiply: value => baseValue * value,
   power: value => sleep(10, Math.pow(baseValue, value)),
   error: () => { throw new Error('test') },

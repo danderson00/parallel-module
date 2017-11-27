@@ -1,4 +1,4 @@
-var client = require('./client')
+var host = require('./host')
 
 module.exports = function (options) {
   var workers = []
@@ -66,7 +66,7 @@ module.exports = function (options) {
     }
     workers.push(container)
 
-    return client(container.worker, { parameter: options.parameter, includeEmit: options.includeEmit })
+    return host(container.worker, { parameter: options.parameter, includeEmit: options.includeEmit })
       .then(api => {
         container.api = api
         availableWorkers.push(container)

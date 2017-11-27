@@ -1,1 +1,1 @@
-require('../../src/api')(value => value * 2)
+require('../../src/worker')(value => value * 2)

@@ -1,4 +1,4 @@
-require('../../src/api')((emit) => 
+require('../../src/worker')((emit) => 
   sleep(10)
     .then(() => emit('stage 1'))
     .then(() => sleep(10))
