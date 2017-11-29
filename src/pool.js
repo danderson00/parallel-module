@@ -4,7 +4,6 @@ module.exports = function (options) {
   var workers = []
   var availableWorkers = []
   var queuedRequests = []
-  var poolSize = options.poolSize || 2
 
   return createWorker().then(function (workerApi) {
     return Object.keys(workerApi).reduce(function (api, property) {
@@ -13,7 +12,7 @@ module.exports = function (options) {
 
         if(availableWorkers.length > 0) {
           return invokeApiFunction()
-        } else if (workers.length < poolSize) {
+        } else if (workers.length < options.poolSize || 2) {
           return createWorker().then(invokeApiFunction)
         } else {
           return queueRequest()
