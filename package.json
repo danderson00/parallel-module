@@ -2,7 +2,8 @@
   "name": "parallel-module",
   "version": "0.0.1",
   "description": "Offload Javascript workloads to multiple CPU cores the easy way",
-  "main": "src/pool.js",
+  "main": "src/index.js",
+  "browser": "src/browser.js",
   "scripts": {
     "test": "jest"
   },
