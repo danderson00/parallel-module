@@ -16,3 +16,9 @@ test("stubbed api returns result", () =>
     .then(api => api.multiply(6))
     .then(result => expect(result).toBe(12))
 )
+
+test("stubs can be created from worker paths", () => {
+  return host(worker.stub(), { workerPath: require.resolve('./workers/standalone') })
+    .then(api => api.multiply(6, 2))
+    .then(result => expect(result).toBe(12))
+})
