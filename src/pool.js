@@ -6,13 +6,21 @@ module.exports = function (options) {
   var queuedRequests = []
 
   return createWorker().then(function (workerApi) {
-    return Object.keys(workerApi).reduce(function (api, property) {
-      api[property] = function () {
+    if(typeof workerApi === 'function')
+      return createInvoker()
+    else
+      return Object.keys(workerApi).reduce(function (api, property) {
+        api[property] = createInvoker(property)
+        return api
+      }, {})
+      
+    function createInvoker(property) {
+      return function () {
         var args = Array.prototype.slice.apply(arguments)
 
         if(availableWorkers.length > 0) {
           return invokeApiFunction()
-        } else if (workers.length < options.poolSize || 2) {
+        } else if (workers.length < (options.poolSize || 2)) {
           return createWorker().then(invokeApiFunction)
         } else {
           return queueRequest()
@@ -20,7 +28,9 @@ module.exports = function (options) {
 
         function invokeApiFunction() {
           var worker = availableWorkers.shift()
-          return worker.api[property].apply(worker, args)
+          var workerFunction = property ? worker.api[property] : worker.api
+
+          return workerFunction.apply(worker, args)
             .then(result => {
               availableWorkers.push(worker)
               executeQueuedRequest()
@@ -48,14 +58,13 @@ module.exports = function (options) {
           })
         }
       }
-      return api
-    }, {})
+    }
   })
 
   function createWorker() {
     var container = {
       worker: options.workerFactory
-        ? options.workerFactory()
+        ? options.workerFactory(options.workerPath)
         : new (options.workerConstructor)(options.workerPath)
     }
     workers.push(container)
