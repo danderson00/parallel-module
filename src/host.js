@@ -17,16 +17,17 @@ module.exports = function(worker, options) {
     execute(initId, { type: 'init', options: options })
       .then(function(result) {
         if(result.type === 'api') {
-          return Object.assign(result.operations.reduce(function(api, operation) {
+          var api = result.operations.reduce(function(api, operation) {
             api[operation] = function() {
               return execute(nextId(), { type: 'invoke', parameters: Array.prototype.slice.apply(arguments), operation: operation })
             }
             return api
-          }, {}), { 
-            terminate: function() {
-              worker.terminate() 
-            }
-          }) 
+          }, {})
+          api.terminate = function() {
+            worker.terminate() 
+          }
+          return api
+
         } else if (result.type === 'function') {
           var executeFunction = function() {
             return execute(nextId(), { type: 'invoke', parameters: Array.prototype.slice.apply(arguments) })            
@@ -35,6 +36,7 @@ module.exports = function(worker, options) {
             worker.terminate()
           }
           return executeFunction
+
         } else {
           throw new Error("Unrecognised response from server")
         }

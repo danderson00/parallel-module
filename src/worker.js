@@ -59,20 +59,21 @@ module.exports = function(workerModule, host) {
 
         case 'invoke':
           var parameters = (e.data.parameters || []).concat(userEmit)
-          var invokePromise
+          var targetFunction
 
-          if(typeof resolvedModule === 'object') {
+          if (typeof resolvedModule === 'object') {
             if(!resolvedModule[e.data.operation])
               emitError(new Error('Unknown operation: ' + e.data.operation))
-            
-            invokePromise = Promise.resolve(resolvedModule[e.data.operation].apply(resolvedModule, parameters))
+            targetFunction = resolvedModule[e.data.operation]
+
           } else if (typeof resolvedModule === 'function') {
-            invokePromise = Promise.resolve(resolvedModule.apply(resolvedModule, parameters))
+            targetFunction = resolvedModule
+
           } else {
             emitError(new Error('Module exports must either be a function or an object'))
           }
 
-          invokePromise
+          Promise.resolve(targetFunction.apply(resolvedModule, parameters))
             .then(function(result) { emit({ result: result }) })
             .catch(emitError)
 
