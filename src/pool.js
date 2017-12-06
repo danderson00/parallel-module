@@ -1,13 +1,16 @@
 var host = require('./host')
 
 module.exports = function (options) {
+  options = Object.assign({
+    poolSize: 2,
+    prewarm: 1
+  }, options)
+
   var workers = []
   var availableWorkers = []
   var queuedRequests = []
 
-  return createWorkers(options.prewarm || 2).then(function (workerApis) {
-    var workerApi = workerApis[0]
-    
+  return prewarm().then(function (workerApi) {
     if(typeof workerApi === 'function')
       return createInvoker()
     else
@@ -79,7 +82,9 @@ module.exports = function (options) {
       })
   }
 
-  function createWorkers(count) {
+  function prewarm() {
+    var count = options.prewarm === 'all' ? options.poolSize : options.prewarm
     return Promise.all((new Array(count)).fill(null).map(createWorker))
+      .then(workers => workers[0])
   }
 }
