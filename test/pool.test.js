@@ -2,25 +2,25 @@ var pool = require('../src/pool')
 var stub = require('../src/worker').stub
 
 test("executes single api calls", () => {
-  return pool({ workerFactory: () => stub({ echo: value => value }) })
+  return pool({ workerFactory: () => stub({ echo: value => value }), prewarm: 1 })
     .then(api => api.echo('test'))
     .then(result => expect(result).toBe('test'))
 })
 
 test("executes single function calls", () => {
-  return pool({ workerFactory: () => stub(value => value) })
+  return pool({ workerFactory: () => stub(value => value), prewarm: 1 })
     .then(api => api('test'))
     .then(result => expect(result).toBe('test'))
 })
 
 test("executes mutiple async api calls", () => {
-  return pool({ workerFactory: () => stub({ echo: value => echoDelayed(value) }) })
+  return pool({ workerFactory: () => stub({ echo: value => echoDelayed(value) }), prewarm: 1 })
     .then(api => Promise.all(['test1', 'test2'].map(api.echo)))
     .then(result => expect(result).toEqual(['test1', 'test2']))
 })
 
 test("executes mutiple async function calls", () => {
-  return pool({ workerFactory: () => stub(value => echoDelayed(value)) })
+  return pool({ workerFactory: () => stub(value => echoDelayed(value)), prewarm: 1 })
     .then(api => Promise.all(['test1', 'test2'].map(api)))
     .then(result => expect(result).toEqual(['test1', 'test2']))
 })
@@ -29,15 +29,31 @@ test("creates a maximum of poolSize workers", () => {
   var workerCount = 0
   return pool({ 
     poolSize: 2,
+    prewarm: 1,
     workerFactory: () => {
       workerCount++
       return stub({ echo: value => echoDelayed(value) }) }
     })
-    .then(api => Promise.all(['test1', 'test2', 'test3'].map(api.echo)))
-    .then(result => {
-      expect(result).toEqual(['test1', 'test2', 'test3'])
-      expect(workerCount).toBe(2)
+    .then(api => {
+      expect(workerCount).toBe(1)
+      return Promise.all(['test1', 'test2', 'test3'].map(api.echo))
     })
+    .then(result => {
+      expect(workerCount).toBe(2)
+      expect(result).toEqual(['test1', 'test2', 'test3'])
+    })
+})
+
+test("creates prewarm workers when pool is created", () => {
+  var workerCount = 0
+  return pool({ 
+    poolSize: 2,
+    prewarm: 2,
+    workerFactory: () => {
+      workerCount++
+      return stub({ echo: value => echoDelayed(value) }) }
+    })
+    .then(result => expect(workerCount).toBe(2))
 })
 
 // too flaky...
@@ -45,6 +61,7 @@ test("creates a maximum of poolSize workers", () => {
 //   var results = []
 //   return pool({ 
 //     poolSize: 3,
+//     prewarm: 1,
 //     workerFactory: () => stub({ delay: value => echoDelayed(value, value) })
 //   })
 //     .then(api => Promise.all([40, 5, 10, 10, 40, 5].map((value, index) => {

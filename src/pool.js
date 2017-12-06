@@ -5,7 +5,9 @@ module.exports = function (options) {
   var availableWorkers = []
   var queuedRequests = []
 
-  return createWorker().then(function (workerApi) {
+  return createWorkers(options.prewarm || 2).then(function (workerApis) {
+    var workerApi = workerApis[0]
+    
     if(typeof workerApi === 'function')
       return createInvoker()
     else
@@ -75,5 +77,9 @@ module.exports = function (options) {
         availableWorkers.push(container)
         return api
       })
+  }
+
+  function createWorkers(count) {
+    return Promise.all((new Array(count)).fill(null).map(createWorker))
   }
 }
