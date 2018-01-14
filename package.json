@@ -1,6 +1,6 @@
 {
   "name": "parallel-module",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Offload Javascript workloads to multiple CPU cores the easy way",
   "main": "src/index.js",
   "browser": "src/browser.js",
@@ -10,7 +10,13 @@
   "jest": {
     "testRegex": "(/test/.*test.js)"
   },
-  "keywords": ["parallel", "module", "worker", "webworker", "promise"],
+  "keywords": [
+    "parallel",
+    "module",
+    "worker",
+    "webworker",
+    "promise"
+  ],
   "author": "danderson00@gmail.com",
   "repository": "https://github.com/danderson00/parallel-module",
   "license": "MIT",
