@@ -61,7 +61,7 @@ module.exports = function(worker, options) {
           }
         }
       }
-      worker.postMessage(Object.assign({ id: id }, payload), '*', extractArrayBuffers(payload.param))
+      worker.postMessage(Object.assign({ id: id }, payload), extractArrayBuffers(payload.param))
     }))
   }
 

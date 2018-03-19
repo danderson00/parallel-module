@@ -1,6 +1,6 @@
 {
   "name": "parallel-module",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "Offload Javascript workloads to multiple CPU cores the easy way",
   "main": "src/index.js",
   "browser": "src/browser.js",
