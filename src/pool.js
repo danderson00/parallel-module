@@ -36,13 +36,13 @@ module.exports = function (options) {
           var workerFunction = property ? worker.api[property] : worker.api
 
           return workerFunction.apply(worker, args)
-            .then(result => {
+            .then(function(result) {
               availableWorkers.push(worker)
               executeQueuedRequest()
               return result
             })
             // need .finally...
-            .catch(error => {
+            .catch(function(error) {
               availableWorkers.push(worker)
               executeQueuedRequest()
               throw error
@@ -75,7 +75,7 @@ module.exports = function (options) {
     workers.push(container)
 
     return host(container.worker, { parameter: options.parameter, includeEmit: options.includeEmit })
-      .then(api => {
+      .then(function(api) {
         container.api = api
         availableWorkers.push(container)
         return api
@@ -85,6 +85,8 @@ module.exports = function (options) {
   function prewarm() {
     var count = options.prewarm === 'all' ? options.poolSize : options.prewarm
     return Promise.all((new Array(count)).fill(null).map(createWorker))
-      .then(workers => workers[0])
+      .then(function(workers) {
+        return workers[0]
+      })
   }
 }
